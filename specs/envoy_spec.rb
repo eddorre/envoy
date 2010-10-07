@@ -18,8 +18,12 @@ describe Envoy do
       
       it "should send a message through the Campfire Transport" do
         @messenger.transport('Campfire', { :account => 'eddorre', :token => '96553fa8d5215f8f5f29a564febb4ad806565857', :room => 'Work' })
-        response = @messenger.deliver_start_message
-        response.should == 'foo'
+        @messenger.deliver_start_message
+      end
+      
+      it "should send a message through the SMTP Transport" do
+        @messenger.transport('SMTP', { :sender => 'carlos@eddorre.com', :recipients => ['carlos@eddorre.com'] })
+        @messenger.deliver_start_message
       end
     end    
   end
