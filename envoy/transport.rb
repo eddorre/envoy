@@ -1,3 +1,6 @@
+require 'broach'
+require 'pony'
+
 module Envoy
   class Transport
     attr_accessor :host, :username, :password
@@ -10,7 +13,6 @@ module Envoy
   end
 
   class Campfire < Transport
-    require 'broach'
     attr_accessor :host, :username, :password, :room
 
     def initialize(options = {})
@@ -21,28 +23,32 @@ module Envoy
     end
 
     def send_start_message(user, options = {})
-      branch_name = Envoy::Git.current_branch
       environment = 'production'
       Broach.settings = { 'account' => self.username, 'token' => self.password }
       Broach.speak(self.room, "#{user} is starting deployment of branch #{branch_name} to #{environment}")
     end
   end
 
-  class SMTP < Transport
-    require 'net/smtp'
-    attr_accessor :host, :username, :password, :sender, :recipients
+  class Mail < Transport
+  attr_accessor :host, :username, :password, :sender, :to, :port, :ssl, :authentication
 
     def initialize(options = {})
       super
       @sender = options[:sender]
-      @recipients = options[:recipients]
+      @to = options[:to]
+      @port = options[:port] || 25
+      @ssl = options[:ssl] || false
+      @authentication = options[:authentication] || nil
     end
 
     def send_start_message(user, options = {})
-      branch_name = Envoy::Git.current_branch
-      Net::SMTP.start(self.host || 'localhost') do |smtp|
-        smtp.send_message "#{user} is starting deployment of branch #{branch_name} to #{environment}", self.sender,
-          self.recipients
+      if @host == 'sendmail' || :sendmail
+        Pony.mail(:from => 'Envoy Messenger <envoymessenger@localhost>', :to => @to.join(','), :via => :sendmail, :body => 'foo')
+      else
+        Pony.mail(:from => 'Envoy Messenger <envoymessenger@localhost>', :to => @to.join(','), :via => :smtp, :via_options => {
+          :address => @host, :port => @port, :enable_starttls_auto => @ssl, :user_name => :username,
+          :password => @password, :authentication => @authentication, :body => 'foo'
+        })
       end
     end
   end
