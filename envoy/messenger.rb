@@ -26,7 +26,7 @@ module Envoy
     def messages(message_options = nil, &block)
       if !message_options.nil?
         rescue ArgumentError if !message_options.is_a? Hash and return
-        self.all_messages << Envoy::Message.new(message_options[:name], message_options[:subject], message_options[:body])
+        self.all_messages << self.message(message_options)
       else
         yield self if block_given?
       end
