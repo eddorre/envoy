@@ -1,4 +1,5 @@
 require 'envoy'
+require 'fakeweb'
 
 describe Envoy do
   describe "Creating a new messenger" do
@@ -17,37 +18,12 @@ describe Envoy do
       end
       
       it "should send a message through the Campfire Transport" do
-        @messenger.transport('Campfire', { :account => 'eddorre', :token => '96553fa8d5215f8f5f29a564febb4ad806565857', :room => 'Work' })
-        @messenger.deliver_start_message
-      end
-      
-      it "should send a message through the SMTP Transport" do
-        @messenger.transport('SMTP', { :sender => 'carlos@eddorre.com', :recipients => ['carlos@eddorre.com'] })
-        @messenger.deliver_start_message
+        FakeWeb.register_uri(:get, 'http://foo:x@account.campfirenow.com/rooms', :body => { :rooms => { :room => { :id => '1', :name => 'Work' } } }.to_json)
+        envoy = Envoy::Campfire.new(:account => 'account', :token => 'foo', :room => 'Work')
+        envoy.send_start_message('Carlos').should == 'Hello world!'
       end
     end    
   end
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
   
   
   
