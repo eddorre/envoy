@@ -31,7 +31,7 @@ module Envoy
   end
 
   class Mail < Transport
-  attr_accessor :host, :username, :password, :sender, :to, :port, :ssl, :authentication, :subject
+  attr_accessor :host, :username, :password, :sender, :to, :port, :ssl, :authentication
 
     def initialize(options = {})
       super
@@ -44,12 +44,12 @@ module Envoy
 
     def send_message(message)
       if @host == 'sendmail' || :sendmail
-        Pony.mail(:from => 'Envoy Messenger <envoymessenger@localhost>', :to => @to.join(','),
-          :via => :sendmail, :body => message.body, :subject => message.subject)
+        Pony.mail(:from => 'Envoy Messenger <envoymessenger@localhost>', :to => (@to.is_a?(String) ? @to : @to.join(',')),
+          :via => :sendmail, :body => message.body || message.subject, :subject => message.subject)
       else
-        Pony.mail(:from => 'Envoy Messenger <envoymessenger@localhost>', :to => @to.join(','), :via => :smtp, :via_options => {
+        Pony.mail(:from => 'Envoy Messenger <envoymessenger@localhost>', :to => (@to.is_a?(String) ? @to : @to.join(',')), :via => :smtp, :via_options => {
           :address => @host, :port => @port, :enable_starttls_auto => @ssl, :user_name => :username,
-          :password => @password, :authentication => @authentication, :body => message.body
+          :password => @password, :authentication => @authentication, :body => message.body || message.subject, :subject => message.subject
         })
       end
     end
