@@ -15,7 +15,7 @@ module Envoy
 
     def deliver_start_message
       self.transports.each do |transport|
-        transport.send_start_message(User.name)
+        transport.send_start_message(Envoy::User.name)
       end
     end
 
