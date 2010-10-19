@@ -45,7 +45,7 @@ module Envoy
     end
 
     def send_message(message)
-      if self.host.to_sym == :sendmail
+      if @host.to_sym == :sendmail
         Pony.mail(:from => (@sender.nil? ? 'Envoy Messenger <envoymessenger@localhost>' : @sender),
           :to => (@to.is_a?(String) ? @to : @to.join(',')),
           :via => :sendmail, :body => message.body || message.subject, :subject => message.subject)
