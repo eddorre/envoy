@@ -50,7 +50,9 @@ module Envoy
     alias :add_message :message
 
     def method_missing(method, *args)
-      message = self.all_messages.select { |message| message.name == method.to_s.gsub('deliver_', '') }.first
+      message = self.all_messages.select do |message|
+        message.name.gsub(' ', '_').downcase == method.to_s.gsub('deliver_', '')
+      end.first
 
       unless message.nil?
         self.all_transports.each do |transport|
