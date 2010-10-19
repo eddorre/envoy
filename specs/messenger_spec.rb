@@ -1,5 +1,4 @@
 require 'envoy'
-require 'fakeweb'
 include Envoy
 
 describe Messenger do
@@ -49,6 +48,14 @@ describe Messenger do
       end
       
       @messenger.all_transports.size.should == 2
+    end
+    
+    it "should raise an exception when a transport doesn't exist" do
+      lambda { @messenger.transport(:name => :foo) }.should raise_error(Envoy::NoTransportError)
+    end
+    
+    it "should not have any transport when a NoTransportError is raised" do
+      @messenger.transport(:name => :foo)
     end
   end
   

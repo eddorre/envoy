@@ -21,7 +21,11 @@ module Envoy
 
     def transport(transport_options = {})
       transport_name = transport_options.delete(:name).to_s.capitalize
-      transport_instance = Module.const_get("Envoy").const_get(transport_name).new(transport_options)
+      begin
+        transport_instance = Module.const_get("Envoy").const_get(transport_name).new(transport_options)
+      rescue
+        raise NoTransportError, "No transport exists for #{transport_name}" and return
+      end
       self.all_transports << transport_instance
     end
     alias :add_transport :transport
