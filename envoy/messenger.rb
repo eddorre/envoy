@@ -10,10 +10,21 @@ module Envoy
       @all_messages = []
     end
 
-    def transport(transport_name, options = {})
-      transport_instance = Module.const_get("Envoy").const_get(transport.to_s.capitalize).new(options)
+    def transports(transport_options = {}, &block)
+      if !transport_options.empty?
+        raise ArgumentError if !transport_options.is_a?(Hash) and return
+        self.all_transports << self.transport(transport_options)
+      else
+        yield self if block_given?
+      end
+    end
+
+    def transport(transport_options = {})
+      transport_name = transport_options.delete(:name).to_s.capitalize
+      transport_instance = Module.const_get("Envoy").const_get(transport_name).new(transport_options)
       self.all_transports << transport_instance
     end
+    alias :add_transport :transport
 
     def deliver_messages
       self.all_messages.each do |message|
@@ -23,9 +34,9 @@ module Envoy
       end
     end
 
-    def messages(message_options = nil, &block)
-      if !message_options.nil?
-        rescue ArgumentError if !message_options.is_a? Hash and return
+    def messages(message_options = {}, &block)
+      if !message_options.empty?
+        raise ArgumentError if !message_options.is_a?(Hash) and return
         self.all_messages << self.message(message_options)
       else
         yield self if block_given?
@@ -36,6 +47,7 @@ module Envoy
       message_options.symbolize_keys!
       self.all_messages << Envoy::Message.new(message_options[:name], message_options[:subject], message_options[:body])
     end
+    alias :add_message :message
 
     def method_missing(method, *args)
       message = self.all_messages.select { |message| message.name == method.to_s.gsub('deliver_', '') }.first
