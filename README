@@ -22,6 +22,8 @@ messenger.messages.each do |message|
   message.add_message(:name => 'End deployment message', :subject => "Carlos ended deployment of branch foo to production at #{Time.now}")
 end
 
+Email and Campfire Transports are included. Create your own by inheriting from Envoy::Transport
+
 OR
 
 messenger.message(:name => 'Start deployment message', :subject => "Carlos started deployment of branch foo to production at #{Time.now}")
