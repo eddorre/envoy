@@ -3,9 +3,9 @@ module Envoy
     attr_accessor :name, :body, :subject
 
     def initialize(name, subject, body = nil)
-      @name = name
-      @body = body
-      @subject = subject
+      self.name = name
+      self.body = body
+      self.subject = subject
     end
   end
 end

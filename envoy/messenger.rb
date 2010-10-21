@@ -2,18 +2,18 @@ module Envoy
   class NoTransportError < StandardError; end
 
   class Messenger
-    attr_reader :all_transports
-    attr_accessor :all_messages
+    attr_accessor :__transports
+    attr_accessor :__messages
 
     def initialize
-      @all_transports = []
-      @all_messages = []
+      self.__transports = []
+      self.__messages = []
     end
 
     def transports(transport_options = {}, &block)
       if !transport_options.empty?
         raise ArgumentError if !transport_options.is_a?(Hash) and return
-        self.all_transports << self.transport(transport_options)
+        self.__transports << self.transport(transport_options)
       else
         yield self if block_given?
       end
@@ -26,13 +26,13 @@ module Envoy
       rescue
         raise NoTransportError, "No transport exists for #{transport_name}" and return
       end
-      self.all_transports << transport_instance
+      self.__transports << transport_instance
     end
     alias :add_transport :transport
 
-    def deliver_messages
-      self.all_messages.each do |message|
-        self.all_transports.each do |transport|
+    def deliver__messages
+      self.__messages.each do |message|
+        self.__transports.each do |transport|
           transport.send_message(message)
         end
       end
@@ -41,7 +41,7 @@ module Envoy
     def messages(message_options = {}, &block)
       if !message_options.empty?
         raise ArgumentError if !message_options.is_a?(Hash) and return
-        self.all_messages << self.message(message_options)
+        self.__messages << self.message(message_options)
       else
         yield self if block_given?
       end
@@ -49,17 +49,17 @@ module Envoy
 
     def message(message_options = {})
       message_options.symbolize_keys!
-      self.all_messages << Envoy::Message.new(message_options[:name], message_options[:subject], message_options[:body])
+      self.__messages << Envoy::Message.new(message_options[:name], message_options[:subject], message_options[:body])
     end
     alias :add_message :message
 
     def method_missing(method, *args)
-      message = self.all_messages.select do |message|
+      message = self.__messages.select do |message|
         message.name.gsub(' ', '_').downcase == method.to_s.gsub('deliver_', '')
       end.first
 
       unless message.nil?
-        self.all_transports.each do |transport|
+        self.__transports.each do |transport|
           transport.send_message(message)
         end
       else

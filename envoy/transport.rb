@@ -7,9 +7,9 @@ module Envoy
     attr_accessor :host, :username, :password
 
     def initialize(options = {})
-      @host = options[:host]
-      @username = options[:username]
-      @password = options[:password]
+      self.host = options[:host]
+      self.username = options[:username]
+      self.password = options[:password]
     end
   end
 
@@ -18,10 +18,10 @@ module Envoy
 
     def initialize(options = {})
       super
-      @room = options[:room]
-      @username = options[:account]
-      @password = options[:token]
-      @use_ssl = options[:token]
+      self.room = options[:room]
+      self.username = options[:account]
+      self.password = options[:token]
+      self.use_ssl = options[:token]
     end
 
     def send_message(message)
@@ -35,13 +35,13 @@ module Envoy
 
     def initialize(options = {})
       super
-      @host = options[:host]
-      @username = options[:username]
-      @sender = options[:sender]
-      @to = options[:to]
-      @port = options[:port] || 25
-      @ssl = options[:ssl] || false
-      @authentication = options[:authentication] || nil
+      self.host = options[:host]
+      self.username = options[:username]
+      self.sender = options[:sender]
+      self.to = options[:to]
+      self.port = options[:port] || 25
+      self.ssl = options[:ssl] || false
+      self.authentication = options[:authentication] || nil
     end
 
     def send_message(message)

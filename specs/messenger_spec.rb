@@ -13,12 +13,12 @@ describe Messenger do
   describe "Adding messages" do
     it "should add an instance of a message" do
       @messenger.message(:name => 'Test message', :subject => 'Test subject')
-      @messenger.all_messages.first.is_a?(Message).should be_true
+      @messenger.__messages.first.is_a?(Message).should be_true
     end
         
     it "should add a message with add_message method" do
       @messenger.add_message(:name => 'Test message', :subject => 'Test subject')
-      @messenger.all_messages.size.should == 1
+      @messenger.__messages.size.should == 1
     end
     
     it "should add two messages" do
@@ -26,19 +26,19 @@ describe Messenger do
         message.add_message(:name => 'Test message', :subject => 'Test subject')
         message.add_message(:name => 'Test message 2', :subject => 'Test subject 2')
       end
-      @messenger.all_messages.size.should == 2
+      @messenger.__messages.size.should == 2
     end
   end
   
   describe "Adding transports" do
     it "should add an instance of a transport" do
       @messenger.transport(:name => :mail, :host => :sendmail, :to => 'carlos@eddorre.com')
-      @messenger.all_transports.first.is_a?(Transport).should be_true
+      @messenger.__transports.first.is_a?(Transport).should be_true
     end
     
     it "should add a transport with add_transport method" do
       @messenger.add_transport(:name => :mail, :host => :sendmail, :to => 'carlos@eddorre.com')
-      @messenger.all_transports.size.should == 1
+      @messenger.__transports.size.should == 1
     end
     
     it "should add two transports" do
@@ -47,16 +47,12 @@ describe Messenger do
         transport.add_transport(:name => :campfire)
       end
       
-      @messenger.all_transports.size.should == 2
+      @messenger.__transports.size.should == 2
     end
     
     it "should raise an exception when a transport doesn't exist" do
       lambda { @messenger.transport(:name => :foo) }.should raise_error(Envoy::NoTransportError)
-    end
-    
-    it "should not have any transport when a NoTransportError is raised" do
-      @messenger.transport(:name => :foo)
-    end
+    end    
   end
   
   describe "Delivering messages" do
@@ -64,7 +60,7 @@ describe Messenger do
       Pony.stub!(:mail)
       @messenger.add_message(:name => 'Test message', :subject => 'Test subject')
       @messenger.add_transport(:name => :mail, :host => :sendmail, :to => 'carlos@eddorre.com')
-      @messenger.all_transports.first.should_receive(:send_message)
+      @messenger.__transports.first.should_receive(:send_message)
       
       @messenger.deliver_test_message
     end
@@ -73,9 +69,9 @@ describe Messenger do
       Pony.stub!(:mail)
       @messenger.add_message(:name => 'Test message', :subject => 'Test subject')
       @messenger.add_transport(:name => :mail, :host => :sendmail, :to => 'carlos@eddorre.com')
-      @messenger.all_transports.first.should_receive(:send_message).with(@messenger.all_messages.first)
+      @messenger.__transports.first.should_receive(:send_message).with(@messenger.__messages.first)
       
-      @messenger.deliver_messages
+      @messenger.deliver__messages
     end
   end
 end
