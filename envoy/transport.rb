@@ -24,7 +24,7 @@ module Envoy
     end
   end
 
-  class Mail < Transport
+  class Email < Transport
   attr_accessor :host, :username, :password, :sender, :to, :port, :ssl, :authentication
 
     def initialize(options = {})

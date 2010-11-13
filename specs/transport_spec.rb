@@ -14,9 +14,9 @@ describe Transport do
     end
   end
 
-  describe "Mail Transport" do
+  describe "Email Transport" do
     before(:each) do
-      @transport = Envoy::Mail.new
+      @transport = Envoy::Email.new
       @transport.to = 'carlos@eddorre.com'
     end
 
