@@ -2,8 +2,7 @@ module Envoy
   class NoTransportError < StandardError; end
 
   class Messenger
-    attr_accessor :_transports
-    attr_accessor :_messages
+    attr_accessor :_transports, :_messages
 
     def initialize
       self._transports = []
