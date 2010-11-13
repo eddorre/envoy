@@ -4,28 +4,22 @@ require 'i18n'
 
 module Envoy
   class Transport
-    attr_accessor :host, :username, :password
-
-    def initialize(options = {})
-      self.host = options[:host]
-      self.username = options[:username]
-      self.password = options[:password]
+    def initialize(*args)
+      raise NotImplementedError, "This is an abstract class. You cannot instantiate this class directly."
     end
   end
 
   class Campfire < Transport
-    attr_accessor :host, :account, :token, :room, :use_ssl
+    attr_accessor :account, :token, :room, :use_ssl
 
     def initialize(options = {})
-      super
       self.room = options[:room]
-      self.username = options[:account]
-      self.password = options[:token]
-      self.use_ssl = options[:token]
+      self.token = options[:token]
+      self.use_ssl = options[:use_ssl]
     end
 
     def send_message(message)
-      Broach.settings = { 'account' => self.username, 'token' => self.password, 'use_ssl' => self.use_ssl }
+      Broach.settings = { 'account' => self.account, 'token' => self.token, 'use_ssl' => self.use_ssl }
       Broach.speak(self.room, message.body || message.subject)
     end
   end
@@ -34,7 +28,6 @@ module Envoy
   attr_accessor :host, :username, :password, :sender, :to, :port, :ssl, :authentication
 
     def initialize(options = {})
-      super
       self.host = options[:host]
       self.username = options[:username]
       self.sender = options[:sender]
