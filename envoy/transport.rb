@@ -71,6 +71,11 @@ module Envoy
               :password => @password, :authentication => @authentication, :body => message.body || message.subject, :subject => message.subject
             })
       end
+
+      return true
+
+      rescue StandardError
+        return false
     end
   end
 end
