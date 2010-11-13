@@ -1,6 +1,8 @@
 require 'broach'
 require 'pony'
 require 'i18n'
+require 'net/http'
+require 'uri'
 
 module Envoy
   class Transport
@@ -19,13 +21,32 @@ module Envoy
     end
 
     def send_message(message)
-      Broach.settings = { 'account' => self.account, 'token' => self.token, 'use_ssl' => self.use_ssl }
+      Broach.settings = { 'account' => @account, 'token' => @token, 'use_ssl' => @use_ssl }
       Broach.speak(self.room, message.body || message.subject)
     end
   end
 
+  class Webhook < Transport
+    attr_accessor :url
+
+    def initialize(options = {})
+      self.url = options[:url]
+    end
+
+    def send_message(message)
+      response = Net::HTTP.post_form(URI.parse(@url), message.options)
+
+      case response
+        when Net::HTTPSuccess
+          return true
+        else
+          return false
+      end
+    end
+  end
+
   class Email < Transport
-  attr_accessor :host, :username, :password, :sender, :to, :port, :ssl, :authentication
+    attr_accessor :host, :username, :password, :sender, :to, :port, :ssl, :authentication
 
     def initialize(options = {})
       self.host = options[:host]
