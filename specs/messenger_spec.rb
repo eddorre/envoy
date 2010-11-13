@@ -28,6 +28,14 @@ describe Messenger do
       end
       @messenger._messages.size.should == 2
     end
+
+    it "should add two messages with the same name" do
+      @messenger.messages do |message|
+        message.add_message(:name => 'Test message', :subject => 'Test subject')
+        message.add_message(:name => 'Test message', :subject => 'Test subject')
+      end
+      @messenger._messages.size.should == 2
+    end
   end
 
   describe "Adding transports" do
