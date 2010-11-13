@@ -62,7 +62,7 @@ module Envoy
 
     def method_missing(method, *args)
       message = self._messages.select do |message|
-        message.name.gsub(' ', '_').downcase == method.to_s.gsub('deliver_', '')
+        message.name.to_s.gsub(' ', '_').downcase == method.to_s.gsub('deliver_', '')
       end.first
 
       unless message.nil?

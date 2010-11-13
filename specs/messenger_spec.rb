@@ -65,6 +65,15 @@ describe Messenger do
       @messenger.deliver_test_message
     end
 
+    it "should deliver a message by name when the name is passed as a symbol" do
+      Pony.stub!(:mail)
+      @messenger.add_message(:name => :test_message, :subject => 'Test subject')
+      @messenger.add_transport(:name => :email, :host => :sendmail, :to => 'carlos@eddorre.com')
+      @messenger._transports.first.should_receive(:send_message)
+
+      @messenger.deliver_test_message
+    end
+
     it "should deliver all messages" do
       Pony.stub!(:mail)
       @messenger.add_message(:name => 'Test message', :subject => 'Test subject')
