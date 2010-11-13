@@ -73,5 +73,15 @@ describe Messenger do
 
       @messenger.deliver_messages
     end
+
+    it "should not re-send the same message more than once" do
+      Pony.stub!(:mail)
+      @messenger.add_message(:name => 'Test message', :subject => 'Test subject')
+      @messenger.add_transport(:name => :email, :host => :sendmail, :to => 'carlos@eddorre.com')
+      @messenger._transports.first.should_receive(:send_message).with(@messenger._messages.first).once.and_return(true)
+
+      @messenger.deliver_messages
+      @messenger.deliver_messages
+    end
   end
 end

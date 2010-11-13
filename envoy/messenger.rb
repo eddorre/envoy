@@ -2,11 +2,12 @@ module Envoy
   class NoTransportError < StandardError; end
 
   class Messenger
-    attr_accessor :_transports, :_messages
+    attr_accessor :_transports, :_messages, :_sent_messages
 
     def initialize
       self._transports = []
       self._messages = []
+      self._sent_messages = []
     end
 
     def transports(transport_options = {}, &block)
@@ -32,8 +33,15 @@ module Envoy
     def deliver_messages
       self._messages.each do |message|
         self._transports.each do |transport|
-          transport.send_message(message)
+          self.deliver_message(transport, message)
         end
+      end
+    end
+
+    def deliver_message(transport, message)
+      unless self._sent_messages.include?({ :transport => transport, :message => message })
+        response = transport.send_message(message)
+        self._sent_messages << { :transport => transport, :message => message } if response
       end
     end
 
@@ -59,7 +67,7 @@ module Envoy
 
       unless message.nil?
         self._transports.each do |transport|
-          transport.send_message(message)
+          self.deliver_message(transport, message)
         end
       else
         super
