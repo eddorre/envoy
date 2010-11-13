@@ -83,5 +83,16 @@ describe Messenger do
       @messenger.deliver_messages
       @messenger.deliver_messages
     end
+
+    it "should deliver messages through two transports when delivering all messages" do
+      Pony.stub!(:mail)
+      Broach.stub!(:speak).and_return(true)
+      @messenger.add_message(:name => 'Test message', :subject => 'Test subject')
+      @messenger.add_transport(:name => :email, :host => :sendmail, :to => 'carlos@eddorre.com')
+      @messenger.add_transport(:name => :campfire)
+
+      @messenger.deliver_messages
+      @messenger._sent_messages.size.should == 2
+    end
   end
 end
