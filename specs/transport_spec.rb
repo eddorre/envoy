@@ -66,6 +66,26 @@ describe Transport do
 
       @transport.send_message(@message)
     end
+
+    it "should return false when an exception is triggered when attempting to send through pony" do
+      @transport.host = :sendmail
+      @transport.sender = 'carlos@eddorre.com'
+      @transport.to = 'carlos@eddorre.com'
+
+      Pony.stub!(:mail).and_raise(ArgumentError)
+
+      @transport.send_message(@message).should == false
+    end
+
+    it "should return true when there is no exception triggered when attempting to send through pony" do
+      @transport.host = :sendmail
+      @transport.sender = 'carlos@eddorre.com'
+      @transport.to = 'carlos@eddorre.com'
+
+      Pony.stub!(:mail).and_return(true)
+
+      @transport.send_message(@message).should == true
+    end
   end
 
   describe "Webhook Transport" do
