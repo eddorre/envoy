@@ -15,6 +15,7 @@ module Envoy
     attr_accessor :account, :token, :room, :use_ssl
 
     def initialize(options = {})
+      self.account = options[:account]
       self.room = options[:room]
       self.token = options[:token]
       self.use_ssl = options[:use_ssl]
