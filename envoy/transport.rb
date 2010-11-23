@@ -24,6 +24,11 @@ module Envoy
     def send_message(message)
       Broach.settings = { 'account' => @account, 'token' => @token, 'use_ssl' => @use_ssl }
       Broach.speak(self.room, message.body || message.subject)
+
+      return true
+
+      rescue Broach::APIError
+        return false
     end
   end
 
@@ -43,6 +48,9 @@ module Envoy
         else
           return false
       end
+
+      rescue StandardError
+        return false
     end
   end
 
