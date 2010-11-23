@@ -6,10 +6,10 @@ Gem::Specification.new do |s|
   s.name        = "envoy"
   s.version     = Envoy::VERSION
   s.platform    = Gem::Platform::RUBY
-  s.authors     = ["TODO: Write your name"]
-  s.email       = ["TODO: Write your email address"]
-  s.homepage    = ""
-  s.summary     = %q{TODO: Write a gem summary}
+  s.authors     = ["Carlos Rodriguez"]
+  s.email       = ["carlos@eddorre.com"]
+  s.homepage    = "http://github.com/eddorre/envoy"
+  s.summary     = %q{A simple, extendable messaging system built for deployments}
   s.description = %q{TODO: Write a gem description}
 
   s.rubyforge_project = "envoy"
@@ -18,4 +18,11 @@ Gem::Specification.new do |s|
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
+
+  s.add_dependency "broach", "0.2.1"
+  s.add_dependency "pony", "1.1"
+  s.add_dependency "i18n"
+
+  s.add_development_dependency "rspec", "~> 2.1.0"
+  s.add_development_dependency "fakeweb", "1.3.0"
 end
