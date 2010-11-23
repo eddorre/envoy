@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.email       = ["carlos@eddorre.com"]
   s.homepage    = "http://github.com/eddorre/envoy"
   s.summary     = %q{A simple, extendable messaging system built for deployments}
-  s.description = %q{TODO: Write a gem description}
+  s.description = %q{A simple, extendable messaging system built for deployments}
 
   s.rubyforge_project = "envoy"
 
