@@ -56,7 +56,8 @@ module Envoy
 
     def message(message_options = {})
       message_options.symbolize_keys!
-      self._messages << Envoy::Message.new(message_options[:name], message_options[:subject], message_options[:body])
+      self._messages << Envoy::Message.new(message_options[:name], message_options[:subject],
+        message_options[:body], message_options[:options])
     end
     alias :add_message :message
 
