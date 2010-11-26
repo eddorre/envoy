@@ -33,14 +33,16 @@ module Envoy
   end
 
   class Webhook < Transport
-    attr_accessor :url
+    attr_accessor :url, :content_type
 
     def initialize(options = {})
       self.url = options[:url]
+      self.content_type = options[:content_type]
     end
 
     def send_message(message)
-      response = Net::HTTP.post_form(URI.parse(@url), message.options)
+      headers = { 'Content-Type' => @content_type || 'application/x-www-form-urlencoded' }
+      response = Net::HTTP.post(URI.parse(@url), message.options, headers)
 
       case response
         when Net::HTTPSuccess
