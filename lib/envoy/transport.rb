@@ -33,26 +33,30 @@ module Envoy
   end
 
   class Webhook < Transport
-    attr_accessor :url, :content_type
+    attr_accessor :url, :headers
 
     def initialize(options = {})
       self.url = options[:url]
-      self.content_type = options[:content_type]
+      self.headers = options[:headers] || {}
     end
 
     def send_message(message)
-      headers = { 'Content-Type' => @content_type || 'application/x-www-form-urlencoded' }
-      response = Net::HTTP.post(URI.parse(@url), message.options, headers)
+      url = URI.parse(@url)
+      request = Net::HTTP::Post.new(url.path)
+      request.body = message.options
+
+      @headers.each do |k,v|
+        request.add_field k,v
+      end
+
+      response = Net::HTTP.start(url.host, url.port) {|http| http.request(request)}
 
       case response
-        when Net::HTTPSuccess
+        when Net::HTTPSuccess, Net::HTTPFound
           return true
         else
           return false
       end
-
-      rescue StandardError
-        return false
     end
   end
 
