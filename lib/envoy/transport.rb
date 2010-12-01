@@ -6,6 +6,17 @@ require 'uri'
 
 module Envoy
   class Transport
+    class SendError < RuntimeError
+      attr_accessor :response, :reported_at
+
+      def initialize(response, reported_at)
+        self.response = response
+        self.reported_at = reported_at
+      end
+    end
+
+    attr_accessor :errors
+
     def initialize(*args)
       raise NotImplementedError, "This is an abstract class. You cannot instantiate this class directly."
     end
@@ -27,7 +38,8 @@ module Envoy
 
       return true
 
-      rescue Broach::APIError
+      rescue Broach::APIError => error
+        self.errors = self.errors << Transport::SendError.new(error, Time.now)
         return false
     end
   end
@@ -57,11 +69,12 @@ module Envoy
         else
           return false
       end
-    end
 
-    rescue Timeout::Error, Errno::EINVAL, Errno::ECONNRESET, EOFError, Net::HTTPBadResponse,
-      Net::HTTPHeaderSyntaxError, Net::ProtocolError
-      return false
+      rescue URI::InvalidURIError, Timeout::Error, Errno::EINVAL, Errno::ECONNRESET, EOFError, Net::HTTPBadResponse,
+        Net::HTTPHeaderSyntaxError, Net::ProtocolError => error
+        self.errors = Transport::SendError.new(error, Time.now)
+        return false
+    end
   end
 
   class Email < Transport
@@ -93,7 +106,8 @@ module Envoy
 
       return true
 
-      rescue StandardError
+      rescue StandardError => error
+        self.errors = Transport::SendError.new(error, Time.now)
         return false
     end
   end

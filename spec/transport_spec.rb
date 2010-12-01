@@ -99,9 +99,17 @@ describe Transport do
       @transport.send_message(@message).should == true
     end
 
-    it "should send a messaged to the webhook url and return false when the service doesn't return a 200" do
+    it "should send a message to the webhook url and return false when the service doesn't return a 200" do
       FakeWeb.register_uri(:post, 'http://foo.com', :body => "Nothing here", :status => ["404", "Not Found"])
       @transport.send_message(@message).should == false
+    end
+
+    it "should add errors to the transport with the exception when an exception is raised" do
+      Net::HTTP.stub!(:start).and_raise(Timeout::Error)
+      FakeWeb.register_uri(:post, 'http://foo.com', :body => "Nothing here", :status => ["404", "Not Found"])
+      @transport.send_message @message
+
+      @transport.errors.should_not be_nil
     end
   end
 end
