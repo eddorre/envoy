@@ -58,6 +58,10 @@ module Envoy
           return false
       end
     end
+
+    rescue Timeout::Error, Errno::EINVAL, Errno::ECONNRESET, EOFError, Net::HTTPBadResponse,
+      Net::HTTPHeaderSyntaxError, Net::ProtocolError
+      return false
   end
 
   class Email < Transport
