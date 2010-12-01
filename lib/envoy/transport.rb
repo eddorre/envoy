@@ -20,6 +20,10 @@ module Envoy
     def initialize(*args)
       raise NotImplementedError, "This is an abstract class. You cannot instantiate this class directly."
     end
+
+    def errors
+      @errors ||= []
+    end
   end
 
   class Campfire < Transport
@@ -39,7 +43,7 @@ module Envoy
       return true
 
       rescue Broach::APIError => error
-        self.errors = self.errors << Transport::SendError.new(error, Time.now)
+        self.errors << Transport::SendError.new(error, Time.now)
         return false
     end
   end
@@ -72,7 +76,7 @@ module Envoy
 
       rescue URI::InvalidURIError, Timeout::Error, Errno::EINVAL, Errno::ECONNRESET, EOFError, Net::HTTPBadResponse,
         Net::HTTPHeaderSyntaxError, Net::ProtocolError => error
-        self.errors = Transport::SendError.new(error, Time.now)
+        self.errors << Transport::SendError.new(error, Time.now)
         return false
     end
   end
@@ -107,7 +111,7 @@ module Envoy
       return true
 
       rescue StandardError => error
-        self.errors = Transport::SendError.new(error, Time.now)
+        self.errors << Transport::SendError.new(error, Time.now)
         return false
     end
   end
