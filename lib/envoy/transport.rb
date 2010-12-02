@@ -7,11 +7,11 @@ require 'uri'
 module Envoy
   class Transport
     class SendError < RuntimeError
-      attr_accessor :response, :reported_at
+      attr_accessor :message, :created_at
 
-      def initialize(response, reported_at)
-        self.response = response
-        self.reported_at = reported_at
+      def initialize(message, created_at)
+        self.message = message
+        self.created_at = created_at
       end
     end
 
@@ -43,7 +43,7 @@ module Envoy
       return true
 
       rescue Broach::APIError => error
-        self.errors << Transport::SendError.new(error, Time.now)
+        self.errors << SendError.new(error, Time.now)
         return false
     end
   end
@@ -76,7 +76,7 @@ module Envoy
 
       rescue URI::InvalidURIError, Timeout::Error, Errno::EINVAL, Errno::ECONNRESET, EOFError, Net::HTTPBadResponse,
         Net::HTTPHeaderSyntaxError, Net::ProtocolError => error
-        self.errors << Transport::SendError.new(error, Time.now)
+        self.errors << SendError.new(error, Time.now)
         return false
     end
   end
@@ -111,7 +111,7 @@ module Envoy
       return true
 
       rescue StandardError => error
-        self.errors << Transport::SendError.new(error, Time.now)
+        self.errors << SendError.new(error, Time.now)
         return false
     end
   end
