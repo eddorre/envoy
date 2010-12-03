@@ -104,7 +104,7 @@ describe Transport do
       @transport.send_message(@message).should == false
     end
 
-    it "should add errors to the transport with the exception when an exception is raised" do
+    it "should add errors to the transport when an exception is raised" do
       Net::HTTP.stub!(:start).and_raise(Timeout::Error)
       FakeWeb.register_uri(:post, 'http://foo.com', :body => "Nothing here", :status => ["404", "Not Found"])
       @transport.send_message @message
