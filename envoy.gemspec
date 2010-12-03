@@ -20,7 +20,7 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
 
   s.add_dependency "broach", "0.2.1"
-  s.add_dependency "i18n"
+  s.add_dependency "i18n", "~> 0.5.0"
   s.add_dependency "pony", "1.1"
 
   s.add_development_dependency "rspec", "~> 2.1.0"
