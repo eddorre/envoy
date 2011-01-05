@@ -1,4 +1,4 @@
-A simple, extendable messaging system
+A simple, extendable messaging system designed for deployments
 
 Usage
 
@@ -22,8 +22,6 @@ messenger.messages.each do |message|
   message.add_message(:name => 'End deployment message', :subject => "Carlos ended deployment of branch foo to production at #{Time.now}")
 end
 
-Email and Campfire Transports are included. Create your own by inheriting from Envoy::Transport
-
 OR
 
 messenger.message(:name => 'Start deployment message', :subject => "Carlos started deployment of branch foo to production at #{Time.now}")
@@ -41,3 +39,5 @@ OR
 # Deliver all messages
 
 messenger.deliver_all_messages
+
+Email, Campfire, and Webhook Transports are included. Create your own by inheriting from Envoy::Transport
