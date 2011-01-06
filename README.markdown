@@ -2,7 +2,7 @@ A simple, extendable messaging system designed for deployments
 
 Usage
 =====
-
+    gem install envoy (use sudo if not using RVM)
     require 'envoy'
 
 Create a new messenger
@@ -45,6 +45,40 @@ Deliver all messages
     messenger.deliver_all_messages
 
 Email, Campfire, and Webhook Transports are included. Create your own by inheriting from Envoy::Transport
+
+Sample Capistrano Usage
+=======================
+
+    begin
+      require 'envoy'
+      set :envoy_loaded, true
+    rescue LoadError
+      set :envoy_loaded, false
+    end
+
+    if envoy_loaded
+      set :messenger, Envoy::Messenger.new
+      set :git_username, `git config user.name`.gsub("\n", '')
+      messenger.transport :name => :campfire, :account => [YOUR ACCOUNT HERE], :token => [YOUR TOKEN HERE], :use_ssl => true
+    else
+      set :messenger, nil
+    end
+
+    before :deploy do
+      if messenger
+        messenger.message :name => :start_deployment,
+          :subject => "#{git_username} started deployment of branch master to production for project Foo at #{Time.now}"
+        messenger.deliver_start_deployment
+      end
+    end
+
+    after :deploy do
+      if messenger
+        messenger.message :name => :end_deployment,
+          :subject => "#{git_username} ended deployment of branch master to production for project Foo at #{Time.now}"
+        messenger.deliver_end_deployment
+      end
+    end
 
 Thanks
 ------
