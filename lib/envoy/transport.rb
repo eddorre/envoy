@@ -1,8 +1,16 @@
+if RUBY_VERSION <= '1.8.6'
+  begin
+    require 'tlsmail'
+  rescue LoadError
+    raise "You need to install tlsmail if you are using ruby <= 1.8.6"
+  end
+end
+
 require 'broach'
-require 'pony'
-require 'i18n'
 require 'net/http'
 require 'uri'
+require 'net/smtp'
+require 'tmail'
 
 module Envoy
   class Transport
@@ -82,30 +90,74 @@ module Envoy
   end
 
   class Email < Transport
-    attr_accessor :host, :username, :password, :sender, :to, :port, :ssl, :authentication
+    attr_accessor :host, :username, :password, :sender, :to, :port, :ssl, :authentication, :domain, :openssl_verify_mode
 
     def initialize(options = {})
       self.host = options[:host]
       self.username = options[:username]
       self.sender = options[:sender]
+      self.password = options[:password]
       self.to = options[:to]
       self.port = options[:port] || 25
       self.ssl = options[:ssl] || false
       self.authentication = options[:authentication] || nil
+      self.domain = options[:domain]
+      self.openssl_verify_mode = options[:openssl_verify_mode]
+    end
+
+    def sendmail_binary
+      sendmail = `which sendmail`.chomp
+      (sendmail.nil? || sendmail == '') ? '/usr/bin/sendmail' : sendmail
+    end
+
+    def build_mail(message)
+      mail = TMail::Mail.new
+      mail.to = @to.is_a?(String) ? @to : @to.join(',')
+      mail.from = @sender.nil? ? 'Envoy Messenger <envoymessenger@localhost>' : @sender
+      mail.subject = message.subject
+      mail.date = Time.now
+      mail.body = message.body || message.subject
+
+      mail
+    end
+
+    def build_connection
+      smtp = Net::SMTP.new(@host, @port)
+
+      if using_authentication?
+        @openssl_verify_mode.nil? ? smtp.send(tls_mode) : smtp.send(tls_mode, @openss_verify_mode)
+      end
+
+      return smtp
+    end
+
+    def tls_mode
+      RUBY_VERSION <= '1.8.6' ? "enable_tls" : "enable_starttls_auto"
+    end
+
+    def using_authentication?
+      !@username.nil? && !@password.nil? && !@authentication.nil? && @ssl
     end
 
     def send_message(message)
+      mail = self.build_mail(message)
+
       if @host.to_sym == :sendmail
-        Pony.mail(:from => (@sender.nil? ? 'Envoy Messenger <envoymessenger@localhost>' : @sender),
-          :to => (@to.is_a?(String) ? @to : @to.join(',')),
-          :via => :sendmail, :body => message.body || message.subject, :subject => message.subject)
+        IO.popen("#{self.sendmail_binary} -f #{mail.from}, #{mail.to}", "w+") do |io|
+          io.puts mail
+          io.flush
+        end
       else
-        Pony.mail(:from => (@sender.nil? ? 'Envoy Messenger <envoymessenger@localhost>' : @sender),
-          :to => (@to.is_a?(String) ? @to : @to.join(',')), :via => :smtp, :via_options =>
-            {
-              :address => @host, :port => @port, :enable_starttls_auto => @ssl, :user_name => @username,
-              :password => @password, :authentication => @authentication, :body => message.body || message.subject, :subject => message.subject
-            })
+        smtp = build_connection
+        if using_authentication?
+          smtp.start(@domain, @username, @password, @authentication.to_sym) do |smtp|
+            smtp.sendmail mail.to_s, mail.from, mail.to
+          end
+        else
+          smtp.start do |smtp|
+            smtp.sendmail mail.to_s, mail.from, mail.to
+          end
+        end
       end
 
       return true
