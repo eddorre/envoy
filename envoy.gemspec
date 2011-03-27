@@ -20,8 +20,8 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
 
   s.add_dependency "broach", "0.2.1"
-  s.add_dependency "i18n", "~> 0.5.0"
-  s.add_dependency "pony", "1.1"
+  s.add_dependency "tmail", "1.2.7.1"
+  s.add_dependency "tlsmail", "0.0.1" if RUBY_VERSION <= '1.8.6'
 
   s.add_development_dependency "rspec", "~> 2.1.0"
   s.add_development_dependency "fakeweb", "1.3.0"
