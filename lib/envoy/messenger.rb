@@ -37,6 +37,7 @@ module Envoy
         end
       end
     end
+    alias :deliver_all_messages :deliver_messages
 
     def deliver_message(transport, message)
       unless self._sent_messages.include?({ :transport => transport, :message => message })
@@ -55,7 +56,6 @@ module Envoy
     end
 
     def message(message_options = {})
-      message_options.symbolize_keys!
       self._messages << Envoy::Message.new(message_options[:name], message_options[:subject],
         message_options[:body], message_options[:options])
     end
