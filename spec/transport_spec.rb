@@ -1,5 +1,7 @@
 require 'envoy'
 require 'fakeweb'
+require 'spec_helper'
+require 'timecop'
 include Envoy
 
 describe Transport do
@@ -17,72 +19,51 @@ describe Transport do
 
   describe "Email Transport" do
     before(:each) do
-      @transport = Envoy::Email.new
-      @transport.to = 'carlos@eddorre.com'
+      @transport = Envoy::Email.new(:to => 'carlos@eddorre.com', :sender => 'carlos_sender@eddorre.com')
     end
 
-    it "should send a message through pony" do
+    it "should send a message through sendmail binary" do
       @transport.host = :sendmail
-      Pony.should_receive(:mail)
+      IO.should_receive(:popen).with("#{@transport.sendmail_binary} -f #{@transport.sender}, #{@transport.to}", "w+")
       @transport.send_message(@message)
     end
 
-    it "should send a message through pony with sendmail" do
-      @transport.host = :sendmail
+    it "should send a message through SMTP" do
+      new_time = Time.local(2008, 9, 1, 12, 0, 0)
+      Timecop.freeze(new_time)
 
+      mail = TMail::Mail.new
+      mail.to = @transport.to
+      mail.from = @transport.sender
+      mail.subject = @message.subject
+      mail.date = Time.now
+      mail.body = @message.subject
 
-      Pony.should_receive(:mail).with(:via => :sendmail, :from => 'Envoy Messenger <envoymessenger@localhost>',
-      :to => 'carlos@eddorre.com', :body => @message.subject, :subject => @message.subject)
+      TMail::Mail.stub!(:new).and_return(mail)
 
-      @transport.send_message(@message)
-    end
-
-    it "should send a message through pony using SMTP" do
       @transport.host = 'mail.eddorre.com'
 
-      Pony.should_receive(:mail).with(:from => 'Envoy Messenger <envoymessenger@localhost>', :to => 'carlos@eddorre.com', :via => :smtp, :via_options => { :address => @transport.host,
-        :port => 25, :enable_starttls_auto => false, :user_name => nil, :password => nil, :authentication => nil,
-        :body => @message.subject, :subject => @message.subject })
-
       @transport.send_message(@message)
+
+      MockSMTP.deliveries[0][1].should == [@transport.sender]
+      MockSMTP.deliveries[0][2].should == [@transport.to]
+      MockSMTP.deliveries[0][0].should == mail.to_s
+
+      Timecop.return
     end
 
-    it "should send a message through pony with multiple recipients" do
-      @transport.to = ['carlos@eddorre.com', 'hello@eddorre.com']
+    it "should return false when an exception is triggered" do
       @transport.host = :sendmail
 
-      Pony.should_receive(:mail).with(:via => :sendmail, :from => 'Envoy Messenger <envoymessenger@localhost>',
-      :to => 'carlos@eddorre.com,hello@eddorre.com', :body => @message.subject, :subject => @message.subject)
-
-      @transport.send_message(@message)
-    end
-
-    it "should send a message through pony with a set sender" do
-      @transport.host = :sendmail
-      @transport.sender = 'carlos@eddorre.com'
-
-      Pony.should_receive(:mail).with(:via => :sendmail, :from => 'carlos@eddorre.com',
-      :to => 'carlos@eddorre.com', :body => @message.subject, :subject => @message.subject)
-
-      @transport.send_message(@message)
-    end
-
-    it "should return false when an exception is triggered when attempting to send through pony" do
-      @transport.host = :sendmail
-      @transport.sender = 'carlos@eddorre.com'
-      @transport.to = 'carlos@eddorre.com'
-
-      Pony.stub!(:mail).and_raise(ArgumentError)
+      IO.stub!(:popen).and_raise(ArgumentError)
 
       @transport.send_message(@message).should == false
     end
 
-    it "should return true when there is no exception triggered when attempting to send through pony" do
+    it "should return true when there is no exception triggered" do
       @transport.host = :sendmail
-      @transport.sender = 'carlos@eddorre.com'
-      @transport.to = 'carlos@eddorre.com'
 
-      Pony.stub!(:mail).and_return(true)
+      IO.stub!(:popen).and_return
 
       @transport.send_message(@message).should == true
     end
